@@ -183,7 +183,7 @@ NIT = 1000
 E = .35
 N = 0.5
 CS = 300000
-K = 10**-21
+K = 10**-22
 M = 2.5
 
 WIDTH = 22
@@ -201,6 +201,7 @@ for i, column in enumerate(elev.T):
 
 # 3. Add noise
 elev = np.flip(elev)
+slope_elev = copy.deepcopy(elev)
 elev_diff = elev[0, 0] - elev[1, 0]
 noise = np.random.normal(0, scale=elev_diff, size=(HEIGHT, WIDTH))
 elev = np.add(elev, noise)
@@ -213,12 +214,17 @@ for loc in input_loc:
     water[0, loc] = q0
 
 # 5. Actually start model
+# BLOWS UP PROBLEM!
 for i in range(NIT):
     print(i)
     water, sediment = main_loop(elev, water, sediment)
     # Evolve the bed
     delev = np.subtract(sediment[:, :, 1], sediment[:, :, 0])
+    print(np.max(delev))
+    print(np.min(delev))
     elev += delev
+    if math.isnan(elev[0,0]):
+        break
 
 
 
